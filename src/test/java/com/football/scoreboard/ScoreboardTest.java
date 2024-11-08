@@ -2,6 +2,7 @@ package com.football.scoreboard;
 
 import football.scoreboard.Match;
 import football.scoreboard.Scoreboard;
+import football.scoreboard.exception.MatchAlreadyStartedException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -56,5 +57,15 @@ public class ScoreboardTest {
         assertThat(startedMatch).isNotNull();
         assertThat(startedMatch.getHomeScore()).isZero();
         assertThat(startedMatch.getAwayScore()).isZero();
+    }
+
+    @Test
+    public void testThatAMatchCannotBeStartedMultipleTimes() {
+        Scoreboard scoreboard = new Scoreboard();
+        scoreboard.startMatch("USA", "Austria");
+        RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
+            scoreboard.startMatch("USA", "Austria");
+        });
+        assertEquals(MatchAlreadyStartedException.class, throwable.getClass());
     }
 }
