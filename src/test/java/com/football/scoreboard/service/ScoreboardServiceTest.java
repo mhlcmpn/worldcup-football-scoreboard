@@ -2,7 +2,17 @@ package com.football.scoreboard.service;
 
 import com.football.scoreboard.domain.Match;
 import com.football.scoreboard.exception.MatchAlreadyStartedException;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,10 +95,95 @@ public class ScoreboardServiceTest {
     }
 
     @Test
-    public void testFinishedGameIsRemovedFromScoreboard() {
+    public void testFinishedMatchIsRemovedFromScoreboard() {
         scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
         scoreboardService.finishMatch(HOME_TEAM, AWAY_TEAM);
 
         assertThat(scoreboardService.findMatch(null, AWAY_TEAM)).isNull();
+    }
+
+    @Test
+    public void whenStartingTheSameMatchOnMultipleThreadsOnScoreboardItAppearOnce() {
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+        Callable<Void> startMatchCallables = () -> {
+            scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+            return null;
+        };
+
+        submitCallablesOnMultipleThreads(executor, Collections.nCopies(5, startMatchCallables));
+        assertThat(scoreboardService.findMatch(HOME_TEAM, AWAY_TEAM)).isNotNull();
+    }
+
+    @Test
+    public void whenStartingAndFinishingGamesInTheSameTimeScoreboardIsNotCorrupted() {
+        List<ImmutablePair<String, String>> matchesToStartAndThenFinish = generateTeamPairs(10, "existing");
+        startMatches(matchesToStartAndThenFinish);
+        List<Callable<Void>> finishMatchCallables = prepareCallablesForFinishTasks(matchesToStartAndThenFinish);
+
+        List<ImmutablePair<String, String>> matchesToStartOnly = generateTeamPairs(10, "new");
+        List<Callable<Void>> startMatchCallables = prepareCallablesForStartTasks(matchesToStartOnly);
+
+        ExecutorService executor = Executors.newFixedThreadPool(15);
+        submitCallablesOnMultipleThreads(executor, finishMatchCallables);
+        submitCallablesOnMultipleThreads(executor, startMatchCallables);
+        matchesToStartAndThenFinish.forEach(pair ->
+                assertThat(scoreboardService.findMatch(pair.left, pair.right)).isNull()
+        );
+
+        matchesToStartOnly.forEach(pair ->
+                assertThat(scoreboardService.findMatch(pair.left, pair.right)).isNotNull()
+        );
+    }
+
+    private List<Callable<Void>> prepareCallablesForFinishTasks(List<ImmutablePair<String, String>> teamNamePairs) {
+        List<Callable<Void>> finishMatchTasks = new ArrayList<>();
+        teamNamePairs.forEach(pair ->
+                finishMatchTasks.add(() -> {
+                    scoreboardService.finishMatch(pair.left, pair.right);
+                    return null;
+                }));
+        return finishMatchTasks;
+    }
+
+    private List<Callable<Void>> prepareCallablesForStartTasks(List<ImmutablePair<String, String>> teamNamePairs) {
+        List<Callable<Void>> finishMatchTasks = new ArrayList<>();
+        teamNamePairs.forEach(pair ->
+                finishMatchTasks.add(() -> {
+                    scoreboardService.startMatch(pair.left, pair.right);
+                    return null;
+                }));
+        return finishMatchTasks;
+    }
+
+    private List<ImmutablePair<String, String>> generateTeamPairs(int count, String prefix) {
+        List<ImmutablePair<String, String>> namePairs = new ArrayList<>();
+        for (int i = 0; i < count; i++) {
+            namePairs.add(new ImmutablePair<>(prefix + HOME_TEAM + i, prefix + AWAY_TEAM + i));
+        }
+        return namePairs;
+    }
+
+    private void startMatches(List<ImmutablePair<String, String>> teamPairs) {
+        teamPairs.forEach(pair ->
+                scoreboardService.startMatch(pair.left, pair.right)
+        );
+    }
+
+    private void submitCallablesOnMultipleThreads(ExecutorService executor, List<Callable<Void>> matches) {
+        List<Future<Void>> futures = new ArrayList<>();
+        for (Callable<Void> match : matches) {
+            Future<Void> future = executor.submit(match);
+            futures.add(future);
+        }
+
+        for (Future<Void> future : futures) {
+            try {
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                if (!(e.getCause() instanceof MatchAlreadyStartedException)) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }
