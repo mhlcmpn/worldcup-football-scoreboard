@@ -1,6 +1,8 @@
 package com.football.scoreboard.service;
 
 import com.football.scoreboard.domain.Match;
+import com.football.scoreboard.domain.Score;
+import com.football.scoreboard.exception.MatchAlreadyFinishedException;
 import com.football.scoreboard.exception.MatchAlreadyStartedException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
@@ -103,7 +105,7 @@ public class ScoreboardServiceTest {
     }
 
     @Test
-    public void whenStartingTheSameMatchOnMultipleThreadsOnScoreboardItAppearOnce() {
+    public void whenStartingTheSameMatchOnMultipleThreadsOnScoreboardItAppearsOnce() {
         ExecutorService executor = Executors.newFixedThreadPool(4);
         Callable<Void> startMatchCallables = () -> {
             scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
@@ -133,6 +135,33 @@ public class ScoreboardServiceTest {
         matchesToStartOnly.forEach(pair ->
                 assertThat(scoreboardService.findMatch(pair.left, pair.right)).isNotNull()
         );
+    }
+
+    @Test
+    public void testUpdateScoreForInProgressMatch() {
+        Score homeScore = new Score(HOME_TEAM, 1);
+        Score awayScore = new Score(AWAY_TEAM, 0);
+
+        scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+        scoreboardService.updateScore(homeScore, awayScore);
+
+        Match match = scoreboardService.findMatch(HOME_TEAM, AWAY_TEAM);
+        assertThat(match).isNotNull();
+        assertThat(match.getHomeScore()).isEqualTo(homeScore.getScore());
+        assertThat(match.getAwayScore()).isEqualTo(awayScore.getScore());
+    }
+
+    @Test
+    public void testUpdateScoreForFinishedMatch() {
+        Score homeScore = new Score(HOME_TEAM, 1);
+        Score awayScore = new Score(AWAY_TEAM, 0);
+
+        scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+        scoreboardService.finishMatch(HOME_TEAM, AWAY_TEAM);
+        RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
+            scoreboardService.updateScore(homeScore, awayScore);
+        });
+        assertEquals(MatchAlreadyFinishedException.class, throwable.getClass());
     }
 
     private List<Callable<Void>> prepareCallablesForFinishTasks(List<ImmutablePair<String, String>> teamNamePairs) {

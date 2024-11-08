@@ -10,6 +10,10 @@ public class Scoreboard {
         return liveMatches.get(key);
     }
 
+    public Match updateMatch(String key, Match match) {
+        return liveMatches.put(key, match);
+    }
+
     public void addMatch(String key, Match match) {
         liveMatches.put(key, match);
     }
