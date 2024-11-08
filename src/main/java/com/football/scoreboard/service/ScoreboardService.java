@@ -3,7 +3,7 @@ package com.football.scoreboard.service;
 import com.football.scoreboard.domain.Match;
 import com.football.scoreboard.domain.Score;
 
-import java.util.Collection;
+import java.util.List;
 
 public interface ScoreboardService {
     void startMatch(String homeTeam, String awayTeam);
@@ -14,5 +14,5 @@ public interface ScoreboardService {
 
     void updateScore(Score homeScore, Score awayScore);
 
-    Collection<Match> buildLiveMatchesSummary();
+    List<Match> buildLiveMatchesSummary();
 }

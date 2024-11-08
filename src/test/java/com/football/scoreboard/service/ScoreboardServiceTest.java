@@ -5,6 +5,7 @@ import com.football.scoreboard.domain.Score;
 import com.football.scoreboard.exception.MatchAlreadyFinishedException;
 import com.football.scoreboard.exception.MatchAlreadyStartedException;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,7 +27,12 @@ public class ScoreboardServiceTest {
     private final String HOME_TEAM = "USA";
     private final String AWAY_TEAM = "Austria";
 
-    private ScoreboardService scoreboardService = new ScoreboardServiceImpl();
+    private ScoreboardService scoreboardService;
+
+    @BeforeEach
+    public void setup() {
+        scoreboardService = new ScoreboardServiceImpl();
+    }
 
     @Test
     public void testStartedMatchIsOnTheScoreboard() {
@@ -181,6 +187,45 @@ public class ScoreboardServiceTest {
         assertThat(liveMatches).isNotNull();
         assertThat(liveMatches.isEmpty()).isFalse();
         assertThat(liveMatches.stream().filter(it -> HOME_TEAM.equalsIgnoreCase(it.getHomeTeam()) && AWAY_TEAM.equalsIgnoreCase(it.getAwayTeam())).findAny()).isNotEmpty();
+    }
+
+    @Test
+    public void testLiveMatchesSummaryIsOrderedByTotalScoreAndStartDate() {
+
+        List<Match> matchesWithUpdatedScore = prepareDataAndReturnMatchesInExpectedOrder();
+        Collection<Match> liveMatches = scoreboardService.buildLiveMatchesSummary();
+        assertThat(liveMatches).isNotNull();
+        assertThat(liveMatches.isEmpty()).isFalse();
+        assertThat(liveMatches.equals(matchesWithUpdatedScore)).isTrue();
+    }
+
+    private List<Match> prepareDataAndReturnMatchesInExpectedOrder() {
+        List<Match> matches = new ArrayList<>();
+
+        startMatchAndUpdateScore(new Score("Mexico", 0), new Score("Canada", 5));
+        startMatchAndUpdateScore(new Score("Spain", 10), new Score("Brazil", 2));
+        startMatchAndUpdateScore(new Score("Germany", 2), new Score("France", 2));
+        startMatchAndUpdateScore(new Score("Uruguay", 6), new Score("Italy", 6));
+        startMatchAndUpdateScore(new Score("Argentina", 3), new Score("Australia", 1));
+
+        matches.add(scoreboardService.findMatch("Uruguay", "Italy"));
+        matches.add(scoreboardService.findMatch("Spain", "Brazil"));
+        matches.add(scoreboardService.findMatch("Mexico", "Canada"));
+        matches.add(scoreboardService.findMatch("Argentina", "Australia"));
+        matches.add(scoreboardService.findMatch("Germany", "France"));
+
+        return matches;
+    }
+
+    private void startMatchAndUpdateScore(Score homeScore, Score awayScore) {
+        try {
+            scoreboardService.startMatch(homeScore.getTeam(), awayScore.getTeam());
+            scoreboardService.updateScore(homeScore, awayScore);
+            //added a small sleep so that the matches do not start in the same time
+            Thread.sleep(10);
+        } catch (InterruptedException e) {
+            //NOOP
+        }
     }
 
     private List<Callable<Void>> prepareCallablesForFinishTasks(List<ImmutablePair<String, String>> teamNamePairs) {

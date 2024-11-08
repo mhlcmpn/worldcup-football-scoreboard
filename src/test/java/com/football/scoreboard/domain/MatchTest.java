@@ -46,9 +46,11 @@ public class MatchTest {
 
     @Test
     public void testInitialScoreForStartedGameIs00() {
-        Match startedMatch = new Match(HOME_TEAM, AWAY_TEAM);
-        assertThat(startedMatch).isNotNull();
-        assertThat(startedMatch.getHomeScore()).isZero();
-        assertThat(startedMatch.getAwayScore()).isZero();
+        Match match = new Match(HOME_TEAM, AWAY_TEAM);
+        match.start();
+        assertThat(match).isNotNull();
+        assertThat(match.getHomeScore()).isZero();
+        assertThat(match.getAwayScore()).isZero();
+        assertThat(match.getStartTime()).isNotNull();
     }
 }

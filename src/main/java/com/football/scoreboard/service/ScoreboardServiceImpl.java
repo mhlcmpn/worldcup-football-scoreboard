@@ -10,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ScoreboardServiceImpl implements ScoreboardService {
 
@@ -64,9 +66,15 @@ public class ScoreboardServiceImpl implements ScoreboardService {
     }
 
     @Override
-    public Collection<Match> buildLiveMatchesSummary() {
-        return scoreboard.getLiveMatches();
+    public List<Match> buildLiveMatchesSummary() {
+        Collection<Match> liveMatches = scoreboard.getLiveMatches();
+        if (Objects.isNull(liveMatches) || liveMatches.isEmpty()) {
+            return List.of();
+        }
+        return liveMatches.stream().sorted(new MatchComparator())
+                .collect(Collectors.toList());
     }
+
 
     private void validateTheMatchIsInProgress(String homeTeam, String awayTeam, Match match) {
         if (Objects.isNull(match)) {
