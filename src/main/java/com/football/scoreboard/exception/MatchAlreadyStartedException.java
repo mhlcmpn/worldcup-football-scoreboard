@@ -1,4 +1,4 @@
-package football.scoreboard.exception;
+package com.football.scoreboard.exception;
 
 public class MatchAlreadyStartedException extends RuntimeException {
     public MatchAlreadyStartedException(String message) {

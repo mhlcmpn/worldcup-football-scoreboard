@@ -1,28 +1,31 @@
-package football.scoreboard;
+package com.football.scoreboard.service;
 
-import football.scoreboard.exception.MatchAlreadyStartedException;
+import com.football.scoreboard.domain.Match;
+import com.football.scoreboard.domain.Scoreboard;
+import com.football.scoreboard.exception.MatchAlreadyStartedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class Scoreboard {
-    private static final Logger log =LoggerFactory.getLogger(Scoreboard.class);
+public class ScoreboardServiceImpl implements ScoreboardService {
 
-    private ConcurrentHashMap<String, Match> liveMatches = new ConcurrentHashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(ScoreboardServiceImpl.class);
 
+    private Scoreboard scoreboard = new Scoreboard();
+
+    @Override
     public void startMatch(String homeTeam, String awayTeam) {
         validateTeamNamesAreDifferent(homeTeam, awayTeam);
         validateMatchWasNotAlreadyStarted(homeTeam, awayTeam);
         Match match = new Match(homeTeam, awayTeam);
         match.start();
-        liveMatches.put(buildMatchKey(homeTeam, awayTeam), match);
+        scoreboard.addMatch(buildMatchKey(homeTeam, awayTeam), match);
     }
 
     private void validateMatchWasNotAlreadyStarted(String homeTeam, String awayTeam) {
-        if (Objects.nonNull(liveMatches.get(buildMatchKey(homeTeam, awayTeam)))) {
+        if (Objects.nonNull(scoreboard.findMatch(buildMatchKey(homeTeam, awayTeam)))) {
             String message = String.format("Match %s - %s was already started", homeTeam, awayTeam);
             log.warn(message);
             throw new MatchAlreadyStartedException(message);
@@ -35,12 +38,12 @@ public class Scoreboard {
         }
     }
 
-    public Match getMatch(String homeTeam, String awayTeam) {
-        return liveMatches.get(buildMatchKey(homeTeam, awayTeam));
+    @Override
+    public Match findMatch(String homeTeam, String awayTeam) {
+        return scoreboard.findMatch(buildMatchKey(homeTeam, awayTeam));
     }
 
     private String buildMatchKey(String homeTeam, String awayTeam) {
         return homeTeam + awayTeam;
     }
-
 }

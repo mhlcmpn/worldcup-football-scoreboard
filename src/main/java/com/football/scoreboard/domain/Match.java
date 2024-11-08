@@ -1,4 +1,4 @@
-package football.scoreboard;
+package com.football.scoreboard.domain;
 
 import org.apache.commons.lang3.StringUtils;
 
