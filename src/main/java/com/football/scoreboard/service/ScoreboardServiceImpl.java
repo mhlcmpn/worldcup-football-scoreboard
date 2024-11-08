@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collection;
 import java.util.Objects;
 
 public class ScoreboardServiceImpl implements ScoreboardService {
@@ -35,7 +36,7 @@ public class ScoreboardServiceImpl implements ScoreboardService {
     }
 
     private void validateTeamNamesAreDifferent(String homeTeam, String awayTeam) {
-        if (StringUtils.compare(homeTeam, awayTeam) == 0) {
+        if (StringUtils.compareIgnoreCase(homeTeam, awayTeam) == 0) {
             log.warn("Home team {} and away team {} have same value", homeTeam, awayTeam);
             throw new IllegalArgumentException("Home team and away team must have different values");
         }
@@ -60,6 +61,11 @@ public class ScoreboardServiceImpl implements ScoreboardService {
         match.setHomeScore(homeScore.getScore());
         match.setAwayScore(awayScore.getScore());
         scoreboard.updateMatch(matchKey, match);
+    }
+
+    @Override
+    public Collection<Match> buildLiveMatchesSummary() {
+        return scoreboard.getLiveMatches();
     }
 
     private void validateTheMatchIsInProgress(String homeTeam, String awayTeam, Match match) {

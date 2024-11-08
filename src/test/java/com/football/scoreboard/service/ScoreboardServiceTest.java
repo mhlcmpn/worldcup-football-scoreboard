@@ -8,6 +8,7 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -72,7 +73,7 @@ public class ScoreboardServiceTest {
     @Test
     public void testHomeTeamMustBeDifferentThanAwayTeam() {
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
-            scoreboardService.startMatch(AWAY_TEAM, AWAY_TEAM);
+            scoreboardService.startMatch("UsA", "usa");
         });
         assertEquals(IllegalArgumentException.class, throwable.getClass());
         assertThat(scoreboardService.findMatch(AWAY_TEAM, AWAY_TEAM)).isNull();
@@ -162,6 +163,24 @@ public class ScoreboardServiceTest {
             scoreboardService.updateScore(homeScore, awayScore);
         });
         assertEquals(MatchAlreadyFinishedException.class, throwable.getClass());
+    }
+
+    @Test
+    public void testLiveMatchesSummaryIsEmptyWhenAllMatchesAreFinished() {
+        scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+        scoreboardService.finishMatch(HOME_TEAM, AWAY_TEAM);
+        Collection<Match> liveMatches = scoreboardService.buildLiveMatchesSummary();
+        assertThat(liveMatches).isNotNull();
+        assertThat(liveMatches.isEmpty()).isTrue();
+    }
+
+    @Test
+    public void testLiveMatchesSummaryContainsInProgressMatch() {
+        scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+        Collection<Match> liveMatches = scoreboardService.buildLiveMatchesSummary();
+        assertThat(liveMatches).isNotNull();
+        assertThat(liveMatches.isEmpty()).isFalse();
+        assertThat(liveMatches.stream().filter(it -> HOME_TEAM.equalsIgnoreCase(it.getHomeTeam()) && AWAY_TEAM.equalsIgnoreCase(it.getAwayTeam())).findAny()).isNotEmpty();
     }
 
     private List<Callable<Void>> prepareCallablesForFinishTasks(List<ImmutablePair<String, String>> teamNamePairs) {

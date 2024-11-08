@@ -1,5 +1,6 @@
 package com.football.scoreboard.domain;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Scoreboard {
@@ -22,7 +23,7 @@ public class Scoreboard {
         liveMatches.remove(key);
     }
 
-    public ConcurrentHashMap<String, Match> getLiveMatches() {
-        return liveMatches;
+    public Collection<Match> getLiveMatches() {
+        return liveMatches.values();
     }
 }
