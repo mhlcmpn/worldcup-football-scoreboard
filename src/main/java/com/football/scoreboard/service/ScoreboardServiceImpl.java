@@ -43,6 +43,11 @@ public class ScoreboardServiceImpl implements ScoreboardService {
         return scoreboard.findMatch(buildMatchKey(homeTeam, awayTeam));
     }
 
+    @Override
+    public void finishMatch(String homeTeam, String awayTeam) {
+        scoreboard.removeMatch(buildMatchKey(homeTeam, awayTeam));
+    }
+
     private String buildMatchKey(String homeTeam, String awayTeam) {
         return homeTeam + awayTeam;
     }

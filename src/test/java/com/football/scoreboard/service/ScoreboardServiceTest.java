@@ -69,7 +69,6 @@ public class ScoreboardServiceTest {
     @Test
     public void testInitialScoreForStartedGameIs00() {
         scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
-
         Match startedMatch = scoreboardService.findMatch(HOME_TEAM, AWAY_TEAM);
         assertThat(startedMatch).isNotNull();
         assertThat(startedMatch.getHomeScore()).isZero();
@@ -83,5 +82,13 @@ public class ScoreboardServiceTest {
             scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
         });
         assertEquals(MatchAlreadyStartedException.class, throwable.getClass());
+    }
+
+    @Test
+    public void testFinishedGameIsRemovedFromScoreboard() {
+        scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+        scoreboardService.finishMatch(HOME_TEAM, AWAY_TEAM);
+
+        assertThat(scoreboardService.findMatch(null, AWAY_TEAM)).isNull();
     }
 }
