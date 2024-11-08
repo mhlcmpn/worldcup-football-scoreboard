@@ -1,6 +1,6 @@
 package com.football.scoreboard.impl;
 
-import com.football.scoreboard.api.model.Match;
+import com.football.scoreboard.impl.model.Match;
 
 import java.util.Comparator;
 

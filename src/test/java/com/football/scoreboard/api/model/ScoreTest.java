@@ -36,7 +36,7 @@ class ScoreTest {
     @Test
     void tesScoreHashCodeAndEquals() {
         Score score1 = new Score("USA", 2);
-        Score score2 = new Score("UsA", 2);
+        Score score2 = new Score("USA", 2);
 
         assertThat(score1.equals(score2)).isTrue();
         assertThat(score1.hashCode()).isEqualTo(score2.hashCode());

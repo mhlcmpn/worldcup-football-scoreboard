@@ -2,7 +2,7 @@ package com.football.scoreboard.api.service;
 
 import com.football.scoreboard.api.exception.InvalidScoreValueException;
 import com.football.scoreboard.api.exception.MatchAlreadyStartedException;
-import com.football.scoreboard.api.model.Match;
+import com.football.scoreboard.api.model.MatchSummary;
 import com.football.scoreboard.api.model.Score;
 
 import java.util.List;
@@ -23,14 +23,6 @@ public interface ScoreboardService {
     void startMatch(String homeTeam, String awayTeam);
 
     /**
-     * Find a match on the scoreboard. If not found, return null
-     * @param homeTeam home team name (mandatory)
-     * @param awayTeam away team name (mandatory)
-     * @return In-progress match corresponding to given homeTeam and awayTeam names
-     */
-    Match findMatch(String homeTeam, String awayTeam);
-
-    /**
      * Mark a match as finished and remove it from scoreboard. If the match is not on the scoreboard, it will throw
      * {@link MatchAlreadyStartedException}
      * @param homeTeam home team name (mandatory)
@@ -49,7 +41,7 @@ public interface ScoreboardService {
     /**
      * Builds a list of in-progress matches ordered by their absolut score (descending order) and
      * then after start time(most recent started game first)
-     * @return Ordered list of in-progress {@link com.football.scoreboard.api.model.Match}
+     * @return Ordered list of in-progress {@link MatchSummary}
      */
-    List<Match> buildLiveMatchesSummary();
+    List<MatchSummary> buildLiveMatchesSummary();
 }

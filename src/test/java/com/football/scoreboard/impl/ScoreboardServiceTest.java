@@ -1,11 +1,10 @@
-package com.football.scoreboard.service;
+package com.football.scoreboard.impl;
 
-import com.football.scoreboard.api.service.ScoreboardService;
-import com.football.scoreboard.api.model.Match;
-import com.football.scoreboard.api.model.Score;
-import com.football.scoreboard.api.exception.NotFoundMatchException;
 import com.football.scoreboard.api.exception.MatchAlreadyStartedException;
-import com.football.scoreboard.impl.ScoreboardServiceImpl;
+import com.football.scoreboard.api.exception.NotFoundMatchException;
+import com.football.scoreboard.api.model.MatchSummary;
+import com.football.scoreboard.api.model.Score;
+import com.football.scoreboard.impl.model.Match;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +29,7 @@ public class ScoreboardServiceTest {
     private final String HOME_TEAM = "USA";
     private final String AWAY_TEAM = "Austria";
 
-    private ScoreboardService scoreboardService;
+    private ScoreboardServiceImpl scoreboardService;
 
     @BeforeEach
     public void setup() {
@@ -186,7 +185,7 @@ public class ScoreboardServiceTest {
     public void testLiveMatchesSummaryIsEmptyWhenAllMatchesAreFinished() {
         scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
         scoreboardService.finishMatch(HOME_TEAM, AWAY_TEAM);
-        Collection<Match> liveMatches = scoreboardService.buildLiveMatchesSummary();
+        Collection<MatchSummary> liveMatches = scoreboardService.buildLiveMatchesSummary();
         assertThat(liveMatches).isNotNull();
         assertThat(liveMatches.isEmpty()).isTrue();
     }
@@ -194,7 +193,7 @@ public class ScoreboardServiceTest {
     @Test
     public void testLiveMatchesSummaryContainsInProgressMatch() {
         scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
-        Collection<Match> liveMatches = scoreboardService.buildLiveMatchesSummary();
+        Collection<MatchSummary> liveMatches = scoreboardService.buildLiveMatchesSummary();
         assertThat(liveMatches).isNotNull();
         assertThat(liveMatches.isEmpty()).isFalse();
         assertThat(liveMatches.stream().filter(it -> HOME_TEAM.equalsIgnoreCase(it.getHomeTeam()) && AWAY_TEAM.equalsIgnoreCase(it.getAwayTeam())).findAny()).isNotEmpty();
@@ -203,15 +202,15 @@ public class ScoreboardServiceTest {
     @Test
     public void testLiveMatchesSummaryIsOrderedByTotalScoreAndStartDate() {
 
-        List<Match> matchesWithUpdatedScore = prepareDataAndReturnMatchesInExpectedOrder();
-        Collection<Match> liveMatches = scoreboardService.buildLiveMatchesSummary();
-        assertThat(liveMatches).isNotNull();
-        assertThat(liveMatches.isEmpty()).isFalse();
-        assertThat(liveMatches.equals(matchesWithUpdatedScore)).isTrue();
+        List<MatchSummary> expectedMatchesSummary = prepareDataAndReturnMatchesInExpectedOrder();
+        Collection<MatchSummary> actualMatchesSummary = scoreboardService.buildLiveMatchesSummary();
+        assertThat(actualMatchesSummary).isNotNull();
+        assertThat(actualMatchesSummary.isEmpty()).isFalse();
+        assertThat(actualMatchesSummary.equals(expectedMatchesSummary)).isTrue();
     }
 
-    private List<Match> prepareDataAndReturnMatchesInExpectedOrder() {
-        List<Match> matches = new ArrayList<>();
+    private List<MatchSummary> prepareDataAndReturnMatchesInExpectedOrder() {
+        List<MatchSummary> matches = new ArrayList<>();
 
         startMatchAndUpdateScore(new Score("Mexico", 0), new Score("Canada", 5));
         startMatchAndUpdateScore(new Score("Spain", 10), new Score("Brazil", 2));
@@ -219,11 +218,11 @@ public class ScoreboardServiceTest {
         startMatchAndUpdateScore(new Score("Uruguay", 6), new Score("Italy", 6));
         startMatchAndUpdateScore(new Score("Argentina", 3), new Score("Australia", 1));
 
-        matches.add(scoreboardService.findMatch("Uruguay", "Italy"));
-        matches.add(scoreboardService.findMatch("Spain", "Brazil"));
-        matches.add(scoreboardService.findMatch("Mexico", "Canada"));
-        matches.add(scoreboardService.findMatch("Argentina", "Australia"));
-        matches.add(scoreboardService.findMatch("Germany", "France"));
+        matches.add(MatchSummaryBuilder.buildMatchSummary(scoreboardService.findMatch("Uruguay", "Italy")));
+        matches.add(MatchSummaryBuilder.buildMatchSummary(scoreboardService.findMatch("Spain", "Brazil")));
+        matches.add(MatchSummaryBuilder.buildMatchSummary(scoreboardService.findMatch("Mexico", "Canada")));
+        matches.add(MatchSummaryBuilder.buildMatchSummary(scoreboardService.findMatch("Argentina", "Australia")));
+        matches.add(MatchSummaryBuilder.buildMatchSummary(scoreboardService.findMatch("Germany", "France")));
 
         return matches;
     }

@@ -3,15 +3,20 @@ package com.football.scoreboard.api.model;
 import com.football.scoreboard.api.exception.InvalidScoreValueException;
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * The Score class encapsulates team name and score value.
  * It will be used for updating the score in {@link com.football.scoreboard.api.service.ScoreboardService}
- *  team - team name
- *  score - absolute score
+ * team - team name
+ * score - absolute score
  */
-public class Score {
+public class Score implements Serializable {
+
+    private static final long serialVersionUID = UUID.randomUUID().getMostSignificantBits();
+
     private final String team;
     private int score = 0;
 
@@ -39,12 +44,11 @@ public class Score {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Score score1 = (Score) o;
-        return score == score1.score
-                && StringUtils.compareIgnoreCase(team, score1.team) == 0;
+        return score == score1.score && Objects.equals(team, score1.team);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(StringUtils.upperCase(team), score);
+        return Objects.hash(team, score);
     }
 }

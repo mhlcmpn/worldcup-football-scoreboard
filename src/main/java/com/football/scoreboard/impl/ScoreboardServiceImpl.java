@@ -1,10 +1,11 @@
 package com.football.scoreboard.impl;
 
-import com.football.scoreboard.api.exception.NotFoundMatchException;
 import com.football.scoreboard.api.exception.MatchAlreadyStartedException;
-import com.football.scoreboard.api.model.Match;
+import com.football.scoreboard.api.exception.NotFoundMatchException;
+import com.football.scoreboard.api.model.MatchSummary;
 import com.football.scoreboard.api.model.Score;
 import com.football.scoreboard.api.service.ScoreboardService;
+import com.football.scoreboard.impl.model.Match;
 import com.football.scoreboard.impl.model.Scoreboard;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -34,11 +35,6 @@ public class ScoreboardServiceImpl implements ScoreboardService {
     }
 
     @Override
-    public Match findMatch(String homeTeam, String awayTeam) {
-        return scoreboard.findMatch(buildMatchKey(homeTeam, awayTeam));
-    }
-
-    @Override
     public void finishMatch(String homeTeam, String awayTeam) {
         scoreboard.removeMatch(buildMatchKey(homeTeam, awayTeam));
     }
@@ -55,17 +51,22 @@ public class ScoreboardServiceImpl implements ScoreboardService {
     }
 
     @Override
-    public List<Match> buildLiveMatchesSummary() {
+    public List<MatchSummary> buildLiveMatchesSummary() {
         Collection<Match> liveMatches = scoreboard.getLiveMatches();
         if (liveMatches.isEmpty()) {
             return List.of();
         }
         return liveMatches.stream().sorted(new MatchComparator())
+                .map(MatchSummaryBuilder::buildMatchSummary)
                 .collect(Collectors.toList());
     }
 
     private String buildMatchKey(String homeTeam, String awayTeam) {
-        return StringUtils.upperCase(homeTeam) + StringUtils.lowerCase(awayTeam);
+        return StringUtils.upperCase(homeTeam) + StringUtils.upperCase(awayTeam);
+    }
+
+    Match findMatch(String homeTeam, String awayTeam) {
+        return scoreboard.findMatch(buildMatchKey(homeTeam, awayTeam));
     }
 
     private void validateMatchWasNotAlreadyStarted(String homeTeam, String awayTeam) {
