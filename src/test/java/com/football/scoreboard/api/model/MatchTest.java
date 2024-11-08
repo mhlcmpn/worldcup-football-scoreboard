@@ -1,5 +1,6 @@
-package com.football.scoreboard.domain;
+package com.football.scoreboard.api.model;
 
+import com.football.scoreboard.api.model.Match;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -52,5 +53,14 @@ public class MatchTest {
         assertThat(match.getHomeScore()).isZero();
         assertThat(match.getAwayScore()).isZero();
         assertThat(match.getStartTime()).isNotNull();
+    }
+
+    @Test
+    void testMatchHashCodeAndEquals() {
+        Match match1 = new Match("USA", "Hungary");
+        Match match2 = new Match("UsA", "hungary");
+
+        assertThat(match1.equals(match2)).isTrue();
+        assertThat(match1.hashCode()).isEqualTo(match2.hashCode());
     }
 }

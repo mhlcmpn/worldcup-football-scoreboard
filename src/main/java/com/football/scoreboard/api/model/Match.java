@@ -1,14 +1,24 @@
-package com.football.scoreboard.domain;
+package com.football.scoreboard.api.model;
 
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Match class encapsulates properties of an in-progress match.
+ * It will be used for updating the score in {@link com.football.scoreboard.api.service.ScoreboardService}
+ *  homeTeam -  home team name
+ *  awayTeam - away team name
+ *  homeScore - home team score
+ *  awayScore - away team score
+ *  startTime - timestamp for match start
+ */
 public class Match {
 
     private final String homeTeam;
     private final String awayTeam;
+
     private int homeScore;
     private int awayScore;
 
@@ -56,10 +66,6 @@ public class Match {
         return startTime;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
     public int getAbsolutScore() {
         return homeScore + awayScore;
     }
@@ -73,11 +79,15 @@ public class Match {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Match match = (Match) o;
-        return homeScore == match.homeScore && awayScore == match.awayScore && Objects.equals(homeTeam, match.homeTeam) && Objects.equals(awayTeam, match.awayTeam) && Objects.equals(startTime, match.startTime);
+        return homeScore == match.homeScore
+                && awayScore == match.awayScore
+                && StringUtils.compareIgnoreCase(homeTeam, match.homeTeam) == 0
+                && StringUtils.compareIgnoreCase(awayTeam, match.awayTeam) == 0
+                && Objects.equals(startTime, match.startTime);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(homeTeam, awayTeam, homeScore, awayScore, startTime);
+        return Objects.hash(StringUtils.upperCase(homeTeam), StringUtils.upperCase(awayTeam), homeScore, awayScore, startTime);
     }
 }

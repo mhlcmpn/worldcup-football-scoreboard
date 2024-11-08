@@ -1,9 +1,14 @@
-package com.football.scoreboard.domain;
+package com.football.scoreboard.impl.model;
+
+import com.football.scoreboard.api.model.Match;
 
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class Scoreboard {
+/**
+ * Internal scoreboard thread safe representation
+ */
+public final class Scoreboard {
 
     private ConcurrentHashMap<String, Match> liveMatches = new ConcurrentHashMap<>();
 

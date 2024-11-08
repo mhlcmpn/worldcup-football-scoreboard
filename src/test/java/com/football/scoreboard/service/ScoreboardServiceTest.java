@@ -1,9 +1,12 @@
 package com.football.scoreboard.service;
 
-import com.football.scoreboard.domain.Match;
-import com.football.scoreboard.domain.Score;
-import com.football.scoreboard.exception.MatchAlreadyFinishedException;
-import com.football.scoreboard.exception.MatchAlreadyStartedException;
+import com.football.scoreboard.api.service.ScoreboardService;
+import com.football.scoreboard.api.model.Match;
+import com.football.scoreboard.api.model.Score;
+import com.football.scoreboard.api.exception.NotFoundMatchException;
+import com.football.scoreboard.api.exception.MatchAlreadyStartedException;
+import com.football.scoreboard.impl.ScoreboardServiceImpl;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -96,9 +99,9 @@ public class ScoreboardServiceTest {
 
     @Test
     public void testThatAMatchCannotBeStartedMultipleTimes() {
-        scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+        scoreboardService.startMatch(StringUtils.lowerCase(HOME_TEAM), StringUtils.upperCase(AWAY_TEAM));
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
-            scoreboardService.startMatch(HOME_TEAM, AWAY_TEAM);
+            scoreboardService.startMatch(StringUtils.upperCase(HOME_TEAM), StringUtils.lowerCase(AWAY_TEAM));
         });
         assertEquals(MatchAlreadyStartedException.class, throwable.getClass());
     }
@@ -159,6 +162,14 @@ public class ScoreboardServiceTest {
     }
 
     @Test
+    public void testUpdateScoreWithNullInput() {
+        RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
+            scoreboardService.updateScore(null, null);
+        });
+        assertEquals(IllegalArgumentException.class, throwable.getClass());
+    }
+
+    @Test
     public void testUpdateScoreForFinishedMatch() {
         Score homeScore = new Score(HOME_TEAM, 1);
         Score awayScore = new Score(AWAY_TEAM, 0);
@@ -168,7 +179,7 @@ public class ScoreboardServiceTest {
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
             scoreboardService.updateScore(homeScore, awayScore);
         });
-        assertEquals(MatchAlreadyFinishedException.class, throwable.getClass());
+        assertEquals(NotFoundMatchException.class, throwable.getClass());
     }
 
     @Test

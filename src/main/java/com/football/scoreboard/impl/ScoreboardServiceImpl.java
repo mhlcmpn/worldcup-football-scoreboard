@@ -1,10 +1,11 @@
-package com.football.scoreboard.service;
+package com.football.scoreboard.impl;
 
-import com.football.scoreboard.domain.Match;
-import com.football.scoreboard.domain.Score;
-import com.football.scoreboard.domain.Scoreboard;
-import com.football.scoreboard.exception.MatchAlreadyFinishedException;
-import com.football.scoreboard.exception.MatchAlreadyStartedException;
+import com.football.scoreboard.api.exception.NotFoundMatchException;
+import com.football.scoreboard.api.exception.MatchAlreadyStartedException;
+import com.football.scoreboard.api.model.Match;
+import com.football.scoreboard.api.model.Score;
+import com.football.scoreboard.api.service.ScoreboardService;
+import com.football.scoreboard.impl.model.Scoreboard;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * Implementation of {@link com.football.scoreboard.api.service.ScoreboardService}
+ */
 public class ScoreboardServiceImpl implements ScoreboardService {
 
     private static final Logger log = LoggerFactory.getLogger(ScoreboardServiceImpl.class);
@@ -27,21 +31,6 @@ public class ScoreboardServiceImpl implements ScoreboardService {
         Match match = new Match(homeTeam, awayTeam);
         match.start();
         scoreboard.addMatch(buildMatchKey(homeTeam, awayTeam), match);
-    }
-
-    private void validateMatchWasNotAlreadyStarted(String homeTeam, String awayTeam) {
-        if (Objects.nonNull(scoreboard.findMatch(buildMatchKey(homeTeam, awayTeam)))) {
-            String message = String.format("Match %s - %s was already started", homeTeam, awayTeam);
-            log.warn(message);
-            throw new MatchAlreadyStartedException(message);
-        }
-    }
-
-    private void validateTeamNamesAreDifferent(String homeTeam, String awayTeam) {
-        if (StringUtils.compareIgnoreCase(homeTeam, awayTeam) == 0) {
-            log.warn("Home team {} and away team {} have same value", homeTeam, awayTeam);
-            throw new IllegalArgumentException("Home team and away team must have different values");
-        }
     }
 
     @Override
@@ -68,19 +57,37 @@ public class ScoreboardServiceImpl implements ScoreboardService {
     @Override
     public List<Match> buildLiveMatchesSummary() {
         Collection<Match> liveMatches = scoreboard.getLiveMatches();
-        if (Objects.isNull(liveMatches) || liveMatches.isEmpty()) {
+        if (liveMatches.isEmpty()) {
             return List.of();
         }
         return liveMatches.stream().sorted(new MatchComparator())
                 .collect(Collectors.toList());
     }
 
+    private String buildMatchKey(String homeTeam, String awayTeam) {
+        return StringUtils.upperCase(homeTeam) + StringUtils.lowerCase(awayTeam);
+    }
+
+    private void validateMatchWasNotAlreadyStarted(String homeTeam, String awayTeam) {
+        if (Objects.nonNull(scoreboard.findMatch(buildMatchKey(homeTeam, awayTeam)))) {
+            String message = String.format("Match %s - %s was already started", homeTeam, awayTeam);
+            log.warn(message);
+            throw new MatchAlreadyStartedException(message);
+        }
+    }
+
+    private void validateTeamNamesAreDifferent(String homeTeam, String awayTeam) {
+        if (StringUtils.compareIgnoreCase(homeTeam, awayTeam) == 0) {
+            log.warn("Home team {} and away team {} have same value", homeTeam, awayTeam);
+            throw new IllegalArgumentException("Home team and away team must have different values");
+        }
+    }
 
     private void validateTheMatchIsInProgress(String homeTeam, String awayTeam, Match match) {
         if (Objects.isNull(match)) {
             String message = String.format("Match %s-%s is not in progress", homeTeam, awayTeam);
             log.warn(message);
-            throw new MatchAlreadyFinishedException(message);
+            throw new NotFoundMatchException(message);
         }
     }
 
@@ -89,9 +96,5 @@ public class ScoreboardServiceImpl implements ScoreboardService {
             log.warn("Home score and away score are both mandatory");
             throw new IllegalArgumentException("Home score and away score are mandatory");
         }
-    }
-
-    private String buildMatchKey(String homeTeam, String awayTeam) {
-        return homeTeam + awayTeam;
     }
 }

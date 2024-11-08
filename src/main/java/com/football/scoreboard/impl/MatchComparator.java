@@ -1,9 +1,13 @@
-package com.football.scoreboard.service;
+package com.football.scoreboard.impl;
 
-import com.football.scoreboard.domain.Match;
+import com.football.scoreboard.api.model.Match;
 
 import java.util.Comparator;
 
+/**
+ * Comparator used in to oder the summary list of in-progress matches based on absolut score (descending)
+ * and then based on start date (most recent first)
+ */
 public class MatchComparator implements Comparator<Match> {
 
     @Override
