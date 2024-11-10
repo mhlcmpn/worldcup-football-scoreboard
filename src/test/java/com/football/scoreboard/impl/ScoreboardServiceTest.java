@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -161,9 +162,17 @@ public class ScoreboardServiceTest {
     }
 
     @Test
-    public void testUpdateScoreWithNullInput() {
+    public void testUpdateScoreWithHomeScoreNull() {
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
-            scoreboardService.updateScore(null, null);
+            scoreboardService.updateScore(null, new Score(AWAY_TEAM, 1));
+        });
+        assertEquals(IllegalArgumentException.class, throwable.getClass());
+    }
+
+    @Test
+    public void testUpdateScoreWithAwayScoreNull() {
+        RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
+            scoreboardService.updateScore(new Score(HOME_TEAM, 1), null);
         });
         assertEquals(IllegalArgumentException.class, throwable.getClass());
     }
@@ -203,10 +212,28 @@ public class ScoreboardServiceTest {
     public void testLiveMatchesSummaryIsOrderedByTotalScoreAndStartDate() {
 
         List<MatchSummary> expectedMatchesSummary = prepareDataAndReturnMatchesInExpectedOrder();
-        Collection<MatchSummary> actualMatchesSummary = scoreboardService.buildLiveMatchesSummary();
+        List<MatchSummary> actualMatchesSummary = scoreboardService.buildLiveMatchesSummary();
         assertThat(actualMatchesSummary).isNotNull();
         assertThat(actualMatchesSummary.isEmpty()).isFalse();
-        assertThat(actualMatchesSummary.equals(expectedMatchesSummary)).isTrue();
+        assertThat(actualMatchesSummary.size()).isEqualTo(expectedMatchesSummary.size());
+        assertThat(actualMatchesSummaryEqualsToExpectedMatchesSummary(actualMatchesSummary, expectedMatchesSummary)).isTrue();
+    }
+
+    private boolean actualMatchesSummaryEqualsToExpectedMatchesSummary(List<MatchSummary> actualMatchesSummary, List<MatchSummary> expectedMatchesSummary) {
+        boolean isEqual = true;
+        for (int i = 0; i < actualMatchesSummary.size() && isEqual; i++) {
+            MatchSummary actual = actualMatchesSummary.get(i);
+            MatchSummary expected = expectedMatchesSummary.get(i);
+            isEqual = haveSameDetails(actual, expected);
+        }
+        return isEqual;
+    }
+
+    private boolean haveSameDetails(MatchSummary actualSummary, MatchSummary expectedSummary) {
+        return Objects.equals(actualSummary.getHomeTeam(), expectedSummary.getHomeTeam())
+                && Objects.equals(actualSummary.getAwayTeam(), expectedSummary.getAwayTeam())
+                && actualSummary.getHomeScore() == expectedSummary.getHomeScore()
+                && actualSummary.getAwayScore() == expectedSummary.getAwayScore();
     }
 
     private List<MatchSummary> prepareDataAndReturnMatchesInExpectedOrder() {

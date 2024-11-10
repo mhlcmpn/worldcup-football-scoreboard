@@ -4,7 +4,7 @@ import com.football.scoreboard.api.model.MatchSummary;
 import com.football.scoreboard.impl.model.Match;
 
 /**
- * Builder class that builds match summary
+ * Match summary builder from a given match
  */
 public class MatchSummaryBuilder {
     public static MatchSummary buildMatchSummary(Match match) {

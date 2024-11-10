@@ -1,7 +1,7 @@
 package com.football.scoreboard.api.model;
 
+import java.io.Serial;
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -11,10 +11,10 @@ import java.util.UUID;
  * awayTeam - away team name
  * homeScore - home team score
  * awayScore - away team score
- * startTime - timestamp for match start
  */
 public class MatchSummary implements Serializable {
 
+    @Serial
     private static final long serialVersionUID = UUID.randomUUID().getMostSignificantBits();
 
     private final String homeTeam;
@@ -54,21 +54,5 @@ public class MatchSummary implements Serializable {
 
     public String toString() {
         return homeTeam + " " + homeScore + " - " + awayTeam + " " + awayScore + "\n";
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        MatchSummary that = (MatchSummary) o;
-        return homeScore == that.homeScore
-                && awayScore == that.awayScore
-                && Objects.equals(homeTeam, that.homeTeam)
-                && Objects.equals(awayTeam, that.awayTeam);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(homeTeam, awayTeam, homeScore, awayScore);
     }
 }

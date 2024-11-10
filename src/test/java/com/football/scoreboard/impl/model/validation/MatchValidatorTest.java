@@ -1,4 +1,4 @@
-package com.football.scoreboard.api.model;
+package com.football.scoreboard.impl.model.validation;
 
 import com.football.scoreboard.impl.model.Match;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,7 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class MatchTest {
+public class MatchValidatorTest {
 
     private static final String HOME_TEAM = "USA";
     private static final String AWAY_TEAM = "Austria";
@@ -17,7 +17,7 @@ public class MatchTest {
     @Test
     public void testHomeTeamCannotBeNull() {
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
-            new Match(null, AWAY_TEAM);
+            MatchValidator.validateTeamNames(null, AWAY_TEAM);
         });
         assertEquals(IllegalArgumentException.class, throwable.getClass());
 
@@ -26,7 +26,7 @@ public class MatchTest {
     @Test
     public void testHomeTeamCannotBeEmpty() {
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
-            new Match(" ", AWAY_TEAM);
+            MatchValidator.validateTeamNames(" ", AWAY_TEAM);
         });
         assertEquals(IllegalArgumentException.class, throwable.getClass());
     }
@@ -34,7 +34,7 @@ public class MatchTest {
     @Test
     public void testAwayTeamCannotBeNull() {
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
-            new Match(HOME_TEAM, null);
+            MatchValidator.validateTeamNames(HOME_TEAM, null);
         });
         assertEquals(IllegalArgumentException.class, throwable.getClass());
     }
@@ -42,7 +42,7 @@ public class MatchTest {
     @Test
     public void testAwayTeamCannotBeEmpty() {
         RuntimeException throwable = assertThrows(RuntimeException.class, () -> {
-            new Match(HOME_TEAM, " ");
+            MatchValidator.validateTeamNames(HOME_TEAM, " ");
         });
         assertEquals(IllegalArgumentException.class, throwable.getClass());
     }

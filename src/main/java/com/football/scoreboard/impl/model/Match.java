@@ -5,6 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+/**
+ * Internal match representation
+ */
 public class Match {
 
     private final String homeTeam;
@@ -15,9 +18,6 @@ public class Match {
     private LocalDateTime startTime;
 
     public Match(String homeTeam, String awayTeam) {
-        if (StringUtils.isAllBlank(homeTeam) || StringUtils.isAllBlank(awayTeam)) {
-            throw new IllegalArgumentException("Both home team and away team are mandatory");
-        }
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
     }
