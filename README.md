@@ -8,14 +8,12 @@ Live Football World Cup Scoreboard
     * homeTeam and awayTeam are mandatory
     * homeTeam <> awayTeam
 * update score feature
-  * update score for a live match. A score object consists:
-    * homeTeam (mandatory)
-    * awayTeam (mandatory)
-    * homeScore (positive number)
-    * awayScore (positive number)
+  * update scores for an in-progress (live) match. A score object consists:
+    * team (mandatory)
+    * score (positive number)
   * constraints
     * match must be in progress
-    * both scores are mandatory, and they contain the absolute score value
+    * both score inputs are mandatory, and they contain the absolute score value
 * finish match feature
   * finish an in-progress match. Once the match is finished, it is removed from the scoreboards
 * summary of matches in progress feature
@@ -64,6 +62,15 @@ public class MyExample {
 }
 ```
 
+## Contributing
+
+Pull requests are welcome. For major changes, please open an issue first
+to discuss what you would like to change. Please make sure to update tests as appropriate.
+
+## License
+
+This project is licensed under the **Apache License 2.0** – see the [license](LICENSE.txt) file for details.
+
 # Notes
 Initial project tasks break down:
 * project skeleton
@@ -81,10 +88,13 @@ Initial project tasks break down:
 * finish match feature
   * match is removed from the scoreboard
   * score cannot be updated once the match was finished
-* live matches scores
-  * statistics include only in progress matches
+* summary of in-progress (live) matches
+  * summary includes only in-progress matches
   * matches are ordered according to requirements
 * concurrency
   * in the same time multiple games can be started and finished
 
 I chose ConcurrentHashMap instead of CopyOnWriteArrayList because of the frequent writes that might be needed for updating the scores.
+
+Initially I have added logback as dependency to have proper logs, but I realized that by doing it i do not offer the library user 
+the possibility to use a logger provider of his choice.
